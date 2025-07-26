@@ -1,0 +1,18 @@
+[package]
+name = "session-finder"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "session-finder"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.4", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+regex = "1.10"
+duct = "0.13"
+walkdir = "2.4"

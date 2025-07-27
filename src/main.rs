@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use std::process;
 
 mod timeline;
-use timeline::{extract_timeline, display_timeline};
+use timeline::{extract_timeline, display_timeline, extract_code_diff_timeline, display_code_diff_timeline};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct SessionMessage {
@@ -114,8 +114,8 @@ fn main() -> Result<()> {
         .arg(
             Arg::new("query")
                 .help("Search terms to find in sessions")
-                .required(true)
-                .num_args(1..),
+                .required(false)
+                .num_args(0..),
         )
         .arg(
             Arg::new("project")
@@ -154,19 +154,36 @@ fn main() -> Result<()> {
                 .value_name("NUM")
                 .default_value("2"),
         )
+        .arg(
+            Arg::new("code_diff")
+                .short('d')
+                .long("code-diff")
+                .help("Extract timeline of code diffs for specific session")
+                .value_name("SESSION_ID_OR_PATH"),
+        )
         .get_matches();
 
-    let search_terms: Vec<&str> = matches.get_many::<String>("query").unwrap().map(|s| s.as_str()).collect();
+    let search_terms: Vec<&str> = matches.get_many::<String>("query")
+        .map(|vals| vals.map(|s| s.as_str()).collect())
+        .unwrap_or_default();
     let project_filter = matches.get_one::<String>("project");
     let limit: usize = matches.get_one::<String>("limit").unwrap().parse()?;
     let recent_days = matches.get_one::<String>("recent").map(|s| s.parse::<i64>()).transpose()?;
     let timeline_session = matches.get_one::<String>("timeline");
+    let code_diff_session = matches.get_one::<String>("code_diff");
     let context_size: usize = matches.get_one::<String>("context").unwrap().parse()?;
 
     if let Some(session_path) = timeline_session {
         let timeline = extract_timeline(session_path, &search_terms, context_size)?;
         display_timeline(&timeline)?;
+    } else if let Some(session_path) = code_diff_session {
+        let code_diff_timeline = extract_code_diff_timeline(session_path, context_size)?;
+        display_code_diff_timeline(&code_diff_timeline)?;
     } else {
+        if search_terms.is_empty() {
+            eprintln!("Error: Search terms are required when not using --timeline or --code-diff");
+            process::exit(1);
+        }
         let sessions = find_sessions(&search_terms, project_filter, recent_days)?;
         let top_sessions = rank_and_limit_sessions(sessions, limit);
         display_results(&top_sessions)?;

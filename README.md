@@ -45,10 +45,13 @@ Use the session-finder agent to find sessions about "rust error handling"
 ## Features
 
 - **Single binary execution** - eliminates permission prompts for multiple shell commands
+- **Timeline extraction** - shows chronological evolution of solutions with `--timeline` flag
+- **Content type detection** - classifies code blocks, tool calls, errors, and discussions
 - **Rich session metadata** - file sizes, line counts, modification times  
 - **Content analysis** - first/last messages, extracted topics, common terms
 - **Path decoding** - converts encoded paths (e.g., `-Users-amar-repos-project` → `/Users/amar/repos/project`)
 - **Intelligent filtering** - removes boilerplate terms, focuses on meaningful content
+- **Robust error handling** - handles special regex characters gracefully
 - **Flexible search** - by content, project path, recency, result limits
 
 ## Command Line Usage
@@ -60,10 +63,12 @@ Arguments:
   <SEARCH_TERMS>...  Terms to search for in session content
 
 Options:
-  -p, --project <PROJECT>    Filter by project path
-  -r, --recent <DAYS>        Only show sessions from last N days
-  -l, --limit <LIMIT>        Limit number of results [default: 10]
-  -h, --help                 Print help
+  -p, --project <PROJECT>           Filter by project path
+  -r, --recent <DAYS>               Only show sessions from last N days
+  -l, --limit <LIMIT>               Limit number of results [default: 10]
+  -t, --timeline <SESSION_ID>       Extract timeline for specific session
+  -c, --context <NUM>               Context messages before/after matches [default: 2]
+  -h, --help                        Print help
 ```
 
 ## Examples
@@ -77,10 +82,17 @@ session-finder --project "/Users/amar/repos/myproject" --recent 7 "debugging"
 
 # Limit results and search for authentication topics
 session-finder --limit 5 "authentication login jwt"
+
+# Extract timeline showing evolution of solutions for a specific session
+session-finder --timeline abc123 "tree-sitter"
+
+# Extract timeline with more context messages
+session-finder --timeline abc123 --context 3 "use_wildcard"
 ```
 
 ## Output Format
 
+### Standard Search Results
 Each session result includes:
 - **Session ID** and resume command
 - **Project path** (decoded from session filename)
@@ -88,6 +100,13 @@ Each session result includes:
 - **File metadata** (size, line count)
 - **Content preview** (first and last messages, truncated)
 - **Common terms** (filtered to remove boilerplate)
+
+### Timeline Extraction
+Timeline output shows:
+- **Chronological message flow** with timestamps and roles
+- **Content type classification** (Discussion, Code Block, Tool Call, Error, Success Response)
+- **Context messages** before and after each match
+- **Evolution of solutions** showing how problems were identified and resolved
 
 ## Building
 

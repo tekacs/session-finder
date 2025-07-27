@@ -7,7 +7,7 @@ use walkdir;
 
 use crate::{
     ClassifiedContent, CodeInfo, ContentType, ErrorInfo, SessionMessage, TimelineEntry,
-    TimelineExtraction, ToolInfo, Content, ContentBlock,
+    TimelineExtraction, ToolInfo, Content,
 };
 
 #[derive(Debug)]

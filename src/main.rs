@@ -3,7 +3,7 @@ use chrono::{DateTime, Utc};
 use clap::{Arg, Command};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process;
@@ -447,7 +447,7 @@ fn is_boilerplate_word(word: &str) -> bool {
         // Common English words
         "the" | "and" | "for" | "with" | "that" | "this" | "but" | "not" | "are" | "was" | "were" |
         "has" | "had" | "have" | "can" | "will" | "would" | "could" | "should" | "may" | "might" |
-        "get" | "put" | "set" | "run" | "use" | "add" | "see" | "now" | "let" | "all" | 
+        "get" | "put" | "set" | "run" | "add" | "see" | "now" | "all" | 
         "one" | "two" | "three" | "four" | "five" | "six" | "seven" | "eight" | "nine" | "ten" |
         "from" | "into" | "over" | "then" | "when" | "what" | "where" | "which" | "who" | "why" | "how" |
         "you" | "your" | "i'm" | "i'll" | "i've" | "it's" | "we're" | "they" | "them" | "their" |
@@ -455,21 +455,21 @@ fn is_boilerplate_word(word: &str) -> bool {
         "first" | "out" | "off" | "way" | "too" | "own" | "just" | "only" | "also" | "back" |
         
         // Programming boilerplate
-        "let" | "mut" | "use" | "pub" | "impl" | "struct" | "enum" | "type" | "trait" | "fn" |
+        "let" | "mut" | "use" | "pub" | "impl" | "struct" | "enum" | "trait" | "fn" |
         "async" | "await" | "self" | "super" | "crate" | "mod" | "extern" | "const" | "static" |
-        "str" | "string" | "bool" | "true" | "false" | "none" | "some" | "ok" | "err" | "result" |
-        "vec" | "option" | "clone" | "into" | "from" | "new" | "default" | "debug" | "derive" |
+        "str" | "string" | "bool" | "true" | "false" | "none" | "ok" | "err" | "result" |
+        "vec" | "option" | "clone" | "default" | "debug" | "derive" |
         "cargo" | "toml" | "src" | "lib" | "main" | "test" | "tests" | "target" | "build" |
         
         // Claude Code / JSONL boilerplate
-        "user" | "assistant" | "message" | "content" | "role" | "type" | "timestamp" | "session" |
+        "user" | "assistant" | "message" | "content" | "role" | "timestamp" | "session" |
         "request" | "response" | "interrupted" | "tool" |
         
         // Common version numbers and paths that appear frequently
         "100644" | "registry" | "https" | "github" | "com" | "crates" | "index" |
         
         // Common technical terms that don't add much context
-        "code" | "line" | "file" | "path" | "name" | "text" | "data" | "info" | "log" | "debug" |
+        "code" | "line" | "file" | "path" | "name" | "text" | "data" | "info" | "log" |
         "check" | "fix" | "update" | "change" | "version" | "issue" | "error" | "warning" |
         "output" | "input" | "return" | "function" | "method" | "call" | "create" | "make" |
         "work" | "working" | "works" | "used" | "using" | "added" | "removed" | "fixed" |
@@ -477,24 +477,24 @@ fn is_boilerplate_word(word: &str) -> bool {
         "good" | "great" | "perfect" | "okay" | "right" | "correct" | "wrong" | "better" |
         "think" | "know" | "understand" | "mean" | "say" | "tell" | "show" | "find" |
         "help" | "try" | "attempt" | "continue" | "start" | "stop" | "end" | "done" |
-        "here" | "there" | "where" | "when" | "what" | "how" | "why" | "who" | "which" |
+        "here" | "there" |
         "before" | "after" | "during" | "while" | "until" | "since" | "about" | "around" |
-        "above" | "below" | "over" | "under" | "through" | "across" | "between" | "among" |
+        "above" | "below" | "under" | "through" | "across" | "between" | "among" |
         "without" | "within" | "outside" | "inside" | "instead" | "besides" | "except" |
         "including" | "excluding" | "according" | "regarding" | "concerning" | "despite" |
         "however" | "therefore" | "otherwise" | "moreover" | "furthermore" | "nevertheless" |
-        "although" | "because" | "unless" | "whether" | "either" | "neither" | "both" |
+        "although" | "because" | "unless" | "whether" | "either" | "neither" |
         "different" | "similar" | "various" | "several" | "multiple" | "single" | "individual" |
         "general" | "specific" | "particular" | "special" | "common" | "normal" | "regular" |
         "current" | "previous" | "recent" | "latest" | "original" | "initial" | "final" |
         "example" | "instance" | "case" | "situation" | "condition" | "state" | "status" |
-        "problem" | "solution" | "answer" | "question" | "reason" | "cause" | "result" |
+        "problem" | "solution" | "answer" | "question" | "reason" | "cause" |
         "important" | "necessary" | "required" | "optional" | "available" | "possible" |
         "simple" | "complex" | "easy" | "difficult" | "hard" | "soft" | "quick" | "slow" |
         "big" | "small" | "large" | "little" | "long" | "short" | "high" | "low" |
         "full" | "empty" | "complete" | "incomplete" | "total" | "partial" | "whole" |
         "sure" | "certain" | "unclear" | "unknown" | "obvious" | "clear" | "visible" |
-        "open" | "close" | "closed" | "old" | "new" | "fresh" | "clean" | "dirty" |
+        "open" | "close" | "closed" | "old" | "fresh" | "clean" | "dirty" |
         "ready" | "busy" | "free" | "active" | "inactive" | "enabled" | "disabled" |
         "public" | "private" | "local" | "remote" | "external" | "internal" | "native"
     )

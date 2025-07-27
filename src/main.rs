@@ -8,6 +8,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process;
 
+mod timeline;
+use timeline::{extract_timeline, display_timeline};
+
 #[derive(Debug, Serialize, Deserialize)]
 struct SessionMessage {
     #[serde(rename = "type")]
@@ -33,6 +36,45 @@ enum Content {
 struct ContentBlock {
     r#type: String,
     text: Option<String>,
+    name: Option<String>,
+    input: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Clone)]
+struct ClassifiedContent {
+    raw_content: String,
+    content_type: ContentType,
+}
+
+#[derive(Debug, Clone)]
+enum ContentType {
+    PlainText,
+    CodeBlock(CodeInfo),
+    ToolCall(ToolInfo), 
+    ErrorMessage(ErrorInfo),
+    SuccessResponse,
+    Discussion,
+}
+
+#[derive(Debug, Clone)]
+struct CodeInfo {
+    language: Option<String>,
+    is_complete: bool,
+    line_count: usize,
+}
+
+#[derive(Debug, Clone)]
+struct ToolInfo {
+    tool_name: String,
+    action_type: String,
+    target_files: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+struct ErrorInfo {
+    error_type: String,
+    severity: String,
+    source: Option<String>,
 }
 
 #[derive(Debug)]
@@ -47,6 +89,23 @@ struct SessionInfo {
     last_messages: Vec<String>,
     common_terms: Vec<String>,
     file_size_bytes: u64,
+}
+
+#[derive(Debug)]
+struct TimelineExtraction {
+    session_id: String,
+    query_term: String,
+    timeline: Vec<TimelineEntry>,
+}
+
+#[derive(Debug)]
+struct TimelineEntry {
+    message_index: usize,
+    timestamp: String,
+    role: String,
+    classified_content: ClassifiedContent,
+    context_before: Vec<String>,
+    context_after: Vec<String>,
 }
 
 fn main() -> Result<()> {
@@ -80,17 +139,38 @@ fn main() -> Result<()> {
                 .help("Show only sessions from the last N days")
                 .value_name("DAYS"),
         )
+        .arg(
+            Arg::new("timeline")
+                .short('t')
+                .long("timeline")
+                .help("Extract timeline for specific session")
+                .value_name("SESSION_ID_OR_PATH"),
+        )
+        .arg(
+            Arg::new("context")
+                .short('c')
+                .long("context")
+                .help("Number of context messages before/after each match")
+                .value_name("NUM")
+                .default_value("2"),
+        )
         .get_matches();
 
     let search_terms: Vec<&str> = matches.get_many::<String>("query").unwrap().map(|s| s.as_str()).collect();
     let project_filter = matches.get_one::<String>("project");
     let limit: usize = matches.get_one::<String>("limit").unwrap().parse()?;
     let recent_days = matches.get_one::<String>("recent").map(|s| s.parse::<i64>()).transpose()?;
+    let timeline_session = matches.get_one::<String>("timeline");
+    let context_size: usize = matches.get_one::<String>("context").unwrap().parse()?;
 
-    let sessions = find_sessions(&search_terms, project_filter, recent_days)?;
-    let top_sessions = rank_and_limit_sessions(sessions, limit);
-
-    display_results(&top_sessions)?;
+    if let Some(session_path) = timeline_session {
+        let timeline = extract_timeline(session_path, &search_terms, context_size)?;
+        display_timeline(&timeline)?;
+    } else {
+        let sessions = find_sessions(&search_terms, project_filter, recent_days)?;
+        let top_sessions = rank_and_limit_sessions(sessions, limit);
+        display_results(&top_sessions)?;
+    }
 
     Ok(())
 }
@@ -127,15 +207,24 @@ fn find_files_with_ripgrep(projects_dir: &Path, search_terms: &[&str]) -> Result
     let mut files = Vec::new();
     
     // Use ripgrep to find files containing any of the search terms
+    // Use -F for literal mode to avoid regex interpretation issues
     let search_pattern = search_terms.join("|");
     let output = process::Command::new("rg")
-        .args(&["-li", "--glob", "*.jsonl", &search_pattern])
+        .args(&["-li", "-F", "--glob", "*.jsonl", &search_pattern])
         .current_dir(projects_dir)
         .output()
         .map_err(|e| anyhow!("Ripgrep failed: {}. Make sure 'rg' is in your PATH", e))?;
     
     if !output.status.success() {
-        return Err(anyhow!("Ripgrep command failed with status: {}", output.status));
+        // If the search fails, it might be due to no matches found (exit code 1) which is fine
+        // But exit code 2 indicates an error. Let's handle both gracefully.
+        if output.status.code() == Some(1) {
+            // No matches found - this is expected behavior
+            return Ok(files);
+        } else {
+            return Err(anyhow!("Ripgrep command failed with status: {}. Error: {}", 
+                output.status, String::from_utf8_lossy(&output.stderr)));
+        }
     }
     
     let output_str = String::from_utf8(output.stdout)?;

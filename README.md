@@ -1,10 +1,15 @@
 # Claude Code Session Finder
 
-A Rust utility for finding and analyzing Claude Code sessions without triggering multiple shell command permission prompts.
+A powerful session discovery system for Claude Code that combines a specialized agent with a high-performance Rust utility to help you find and analyze your conversation history.
 
 ## Overview
 
-This tool replaces the multi-command shell pipeline used by the Claude Code session-finder agent with a single Rust binary. It provides enhanced session analysis including metadata, content summarization, and intelligent filtering.
+The session finder system consists of two complementary components:
+
+1. **Session Finder Agent** - A Claude Code agent that provides intelligent session discovery through natural language queries
+2. **Rust Utility** - A fast, single-binary tool that performs the actual session analysis without triggering permission prompts
+
+Together, they enable seamless discovery of past conversations, code solutions, and project discussions within your Claude Code history.
 
 ## Quick Start
 
@@ -37,14 +42,55 @@ cargo run -- "authentication login"
 ```
 
 ### Usage from Claude Code:
-Once symlinked, use the session-finder agent in Claude Code:
+Once symlinked, use the session-finder agent in Claude Code with natural language:
+
+**Basic session discovery:**
 ```
 Use the session-finder agent to find sessions about "rust error handling"
+Find my previous conversations about JWT authentication
+Show me sessions where I worked on database migrations
 ```
 
-## Features
+**Timeline extraction to see solution evolution:**
+```
+Find sessions about "tree-sitter parsing" and show me the timeline of how we solved it
+Show me the conversation flow for sessions about "authentication bug" to see how we debugged it
+Find sessions about "API design" and extract the timeline to see how the solution evolved
+```
 
-- **Single binary execution** - eliminates permission prompts for multiple shell commands
+**Code diff timeline to track implementation changes:**
+```
+Find sessions about "payment system" and show me all the code changes we made
+Show me the code evolution for sessions about "database schema migration"
+Find sessions about "user authentication" and extract all the code diffs to see the implementation
+```
+
+**Resurrecting and comparing approaches:**
+```
+Find sessions where we worked on "caching strategies" - I want to compare our previous approach to what I'm doing now
+Show me how we solved "rate limiting" before and extract the code so I can adapt it to this new service
+Find sessions about "error handling patterns" and show me the timeline - I think we had a better approach before
+Compare our previous "database connection pooling" implementation to see if we should revert some changes
+Find sessions where we debugged "memory leaks" and show me the code diffs - I'm seeing similar issues now
+```
+
+The agent will intelligently interpret your request and use the Rust utility to search through your session history or extract detailed timelines.
+
+## Why Add This to Your Claude Code?
+
+### Benefits
+- **Instant session discovery** - quickly find relevant past conversations without browsing through files
+- **Natural language queries** - ask the agent in plain English rather than constructing complex search terms
+- **No permission prompts** - seamless experience without shell command interruptions
+- **Rich context** - see conversation evolution, code changes, and solution development over time
+- **Project-aware search** - filter by specific codebases or time periods
+- **Learning from history** - rediscover solutions, patterns, and approaches from previous work
+- **Approach comparison** - easily compare current implementations to previous solutions
+- **Code archaeology** - resurrect and adapt working solutions from past sessions
+- **Decision tracing** - understand why certain architectural choices were made
+- **Debug pattern recognition** - find similar issues and their previous solutions
+
+### Key Features
 - **Timeline extraction** - shows chronological evolution of solutions with `--timeline` flag
 - **Code diff timeline** - extracts all code changes with context using `--code-diff` flag
 - **Content type detection** - classifies code blocks, tool calls, errors, and discussions
@@ -139,6 +185,20 @@ just build
 just run "search terms"
 ```
 
-## Integration
+## How It Works
 
-This tool is used by the Claude Code session-finder agent to provide seamless session discovery without shell command permission prompts. The agent configuration points to the release binary at `~/.claude/support/session-finder/target/release/session-finder`.
+The session finder agent acts as an intelligent interface that:
+1. **Interprets natural language queries** about your session history, including requests to compare approaches or resurrect solutions
+2. **Translates requests** into appropriate search parameters and timeline extractions for the Rust utility
+3. **Executes the binary** with optimized arguments for discovery, timeline analysis, or code diff extraction
+4. **Presents results** with relevant context, code comparisons, and resume commands for further exploration
+
+The Rust utility handles the heavy lifting:
+- **Fast file scanning** using ripgrep for initial filtering
+- **Content analysis** with JSON parsing and topic extraction
+- **Timeline reconstruction** showing conversation evolution
+- **Metadata enrichment** with file stats and decoded paths
+
+## Agent Integration
+
+The session-finder agent is configured to use the release binary at `~/.claude/support/session-finder/target/release/session-finder`, providing seamless integration with your Claude Code workflow.

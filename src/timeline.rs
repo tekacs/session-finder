@@ -116,6 +116,13 @@ fn find_matching_messages(messages: &[SessionMessage], search_terms: &[&str]) ->
             if let Some(inner_msg) = &msg.message {
                 if let Some(content) = &inner_msg.content {
                     let content_text = extract_content_text(content);
+                    
+                    // Skip lines that mention session-finder to avoid false positives
+                    if content_text.to_lowercase().contains("session-finder") || 
+                       content_text.to_lowercase().contains("session_finder") {
+                        return None;
+                    }
+                    
                     for term in search_terms {
                         if content_text.to_lowercase().contains(&term.to_lowercase()) {
                             return Some(index);

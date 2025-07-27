@@ -341,10 +341,16 @@ fn analyze_session_content_enhanced(content: &str, search_terms: &[&str]) -> Res
                         if !content_text.is_empty() {
                             all_messages.push(format!("{}: {}", role, truncate_text(&content_text, 200)));
                             
+                            // Skip lines that mention session-finder to avoid false positives
+                            let skip_for_search = content_text.to_lowercase().contains("session-finder") || 
+                                                  content_text.to_lowercase().contains("session_finder");
+                            
                             // Extract topics from content matching search terms
-                            for term in search_terms {
-                                if content_text.to_lowercase().contains(&term.to_lowercase()) {
-                                    extract_topics_from_text(&content_text, term, &mut topics);
+                            if !skip_for_search {
+                                for term in search_terms {
+                                    if content_text.to_lowercase().contains(&term.to_lowercase()) {
+                                        extract_topics_from_text(&content_text, term, &mut topics);
+                                    }
                                 }
                             }
                             

@@ -177,11 +177,11 @@ fn main() -> Result<()> {
         let timeline = extract_timeline(session_path, &search_terms, context_size)?;
         display_timeline(&timeline)?;
     } else if let Some(session_path) = code_diff_session {
-        let code_diff_timeline = extract_code_diff_timeline(session_path, context_size)?;
+        let code_diff_timeline = extract_code_diff_timeline(session_path, &search_terms, context_size)?;
         display_code_diff_timeline(&code_diff_timeline)?;
     } else {
         if search_terms.is_empty() {
-            eprintln!("Error: Search terms are required when not using --timeline or --code-diff");
+            eprintln!("Error: Search terms are required for regular search mode");
             process::exit(1);
         }
         let sessions = find_sessions(&search_terms, project_filter, recent_days)?;

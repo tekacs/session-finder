@@ -46,6 +46,7 @@ Use the session-finder agent to find sessions about "rust error handling"
 
 - **Single binary execution** - eliminates permission prompts for multiple shell commands
 - **Timeline extraction** - shows chronological evolution of solutions with `--timeline` flag
+- **Code diff timeline** - extracts all code changes with context using `--code-diff` flag
 - **Content type detection** - classifies code blocks, tool calls, errors, and discussions
 - **Rich session metadata** - file sizes, line counts, modification times  
 - **Content analysis** - first/last messages, extracted topics, common terms
@@ -67,6 +68,7 @@ Options:
   -r, --recent <DAYS>               Only show sessions from last N days
   -l, --limit <LIMIT>               Limit number of results [default: 10]
   -t, --timeline <SESSION_ID>       Extract timeline for specific session
+  -d, --code-diff <SESSION_ID>      Extract timeline of code diffs for specific session
   -c, --context <NUM>               Context messages before/after matches [default: 2]
   -h, --help                        Print help
 ```
@@ -88,6 +90,12 @@ session-finder --timeline abc123 "tree-sitter"
 
 # Extract timeline with more context messages
 session-finder --timeline abc123 --context 3 "use_wildcard"
+
+# Extract code diff timeline showing all code changes
+session-finder --code-diff abc123
+
+# Extract code diff timeline with context
+session-finder --code-diff abc123 --context 1
 ```
 
 ## Output Format
@@ -107,6 +115,14 @@ Timeline output shows:
 - **Content type classification** (Discussion, Code Block, Tool Call, Error, Success Response)
 - **Context messages** before and after each match
 - **Evolution of solutions** showing how problems were identified and resolved
+
+### Code Diff Timeline
+Code diff timeline output shows:
+- **Chronological code changes** with timestamps and roles
+- **Tool operations** (Write, Edit, MultiEdit, Bash commands)
+- **Code blocks** from user messages and markdown
+- **Clear formatting** with emojis and structured diffs (Replace/With for edits)
+- **Context messages** before and after each code change
 
 ## Building
 

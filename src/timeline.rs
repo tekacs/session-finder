@@ -437,6 +437,7 @@ pub fn display_timeline(timeline: &TimelineExtraction) -> Result<()> {
 
 pub fn extract_code_diff_timeline(
     session_path: &str,
+    search_terms: &[&str],
     context_size: usize,
 ) -> Result<CodeDiffTimeline> {
     let full_path = resolve_session_path(session_path)?;
@@ -466,6 +467,36 @@ pub fn extract_code_diff_timeline(
                 context_before,
                 context_after,
             }
+        })
+        .filter(|entry| {
+            // If no search terms provided, include all code changes
+            if search_terms.is_empty() {
+                return true;
+            }
+            
+            // Check if any search term matches the code content or context
+            search_terms.iter().any(|term| {
+                let term_lower = term.to_lowercase();
+                
+                // Check code content
+                if entry.code_content.to_lowercase().contains(&term_lower) {
+                    return true;
+                }
+                
+                // Check context before
+                if entry.context_before.iter().any(|ctx| 
+                    ctx.to_lowercase().contains(&term_lower)) {
+                    return true;
+                }
+                
+                // Check context after
+                if entry.context_after.iter().any(|ctx| 
+                    ctx.to_lowercase().contains(&term_lower)) {
+                    return true;
+                }
+                
+                false
+            })
         })
         .collect();
 

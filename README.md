@@ -1,36 +1,8 @@
 # Claude Code Session Finder
 
-A powerful session discovery system for Claude Code that combines a specialized agent with a high-performance Rust utility to help you find and analyze your conversation history.
-
-## Overview
-
-The session finder system consists of two complementary components:
-
-1. **Session Finder Agent** - A Claude Code agent that provides intelligent session discovery through natural language queries
-2. **Rust Utility** - A fast, single-binary tool that performs the actual session analysis without triggering permission prompts
-
-Together, they enable seamless discovery of past conversations, code solutions, and project discussions within your Claude Code history.
+A session discovery system for Claude Code that combines a sub-agent with a Rust utility to help you find and analyze your conversation history.
 
 ## Quick Start
-
-### Installation
-1. Clone this repository to your Claude Code support directory:
-   ```bash
-   cd ~/.claude/support
-   git clone <this-repo> session-finder
-   cd session-finder
-   ```
-
-2. Build the tool:
-   ```bash
-   just build
-   # or: cargo build --release
-   ```
-
-3. Symlink the agent file to your Claude Code agents directory:
-   ```bash
-   ln -sf ~/.claude/support/session-finder/session-finder.md ~/.claude/agents/session-finder.md
-   ```
 
 ### Usage from this repository:
 ```bash
@@ -75,6 +47,34 @@ Find sessions where we debugged "memory leaks" and show me the code diffs - I'm 
 ```
 
 The agent will intelligently interpret your request and use the Rust utility to search through your session history or extract detailed timelines.
+
+### Installation
+1. Clone this repository to your Claude Code support directory:
+   ```bash
+   cd ~/.claude/support
+   git clone <this-repo> session-finder
+   cd session-finder
+   ```
+
+2. Build the tool:
+   ```bash
+   just build
+   # or: cargo build --release
+   ```
+
+3. Symlink the agent file to your Claude Code agents directory:
+   ```bash
+   ln -sf ~/.claude/support/session-finder/session-finder.md ~/.claude/agents/session-finder.md
+   ```
+
+## How it works
+
+The session finder system consists of two complementary components:
+
+1. **Session Finder Agent** - A Claude Code agent that provides intelligent session discovery through natural language queries
+2. **Rust Utility** - A fast, single-binary tool that performs the actual session analysis without triggering permission prompts
+
+Together, they enable seamless discovery of past conversations, code solutions, and project discussions within your Claude Code history.
 
 ## Why Add This to Your Claude Code?
 
